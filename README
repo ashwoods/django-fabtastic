@@ -1,0 +1,47 @@
+Django fabtastic
+================
+
+A small collection of class based fabric commands for deploying django on debian/ubuntu systems.
+Status is mega mega alpha, the methods themselves are already in quasi production, but I am
+refactoring everything to make it more generic.
+
+
+Requirements & Installation
+---------------------------
+
+Requires fabric. Use PIP to install it from git.
+
+    pip install -e git+http://...
+
+
+Usage
+-----
+
+Fabtastic was made with a certain deployment workflow in mind following django deployment good practice,
+including virtualenv+pip use.
+
+Fabtastic includes a set of functions that are often needed with fabric deployments, ie.:
+
+ve_run(command):                    run a command from within a virtualenv.
+pip_install_requirements():         install python requirements from a pip requirements file.
+install_packages(list):             installs system packages from list
+
+
+Fabtastic also includes a set of class based fabric commands for setting up common packages including
+databases, webservers, etc...
+
+Each fabstastic class has the following 4 methods:
+     install
+     configure
+     setup* (normally a shortcut for install & configure)
+     reload
+
+If for any reason you have to change how one these commands work, you can just override the method.
+
+
+The default workflow for configuring system services is normally buy either symlinking, copying,
+or running a configuration file. You have to define env.confdir in order for the service configuration
+to work.
+
+
+Sorry, to be continued!
