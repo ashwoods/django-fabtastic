@@ -22,13 +22,13 @@ class FabricCommand(object):
     def install(self):
         raise NotImplementedError
 
-    def reload(self):
+    def restart(self):
         raise NotImplementedError
 
     def setup(self):
         self.install()
         self.configure()
-        self.reload()
+        self.restart()
 
 
 # TODO: For now everything is on one file, but I'll split things up once this grows to long
@@ -40,13 +40,13 @@ class fabNginx(FabricCommand):
 
     def configure(self):
         with settings(user=env.sys_admin):
-            sudo('ln -sf %s/nginx.conf /etc/nginx/sites-enabled/rh2' % env.confdir)
+            sudo('ln -sf %s/nginx/nginx.conf /etc/nginx/sites-enabled/%s' % (env.conf_dir, env.projectname))
 
-    def reload(self):
+    def restart(self):
         with settings(user=env.sys_admin):
             sudo('/etc/init.d/nginx restart')
 
-class fabPostgresql():
+class fabPostgresql(FabricCommand):
     """Install Postgres 8.4"""
 
     def install(self):
@@ -54,8 +54,10 @@ class fabPostgresql():
 
     def configure(self):
         with settings(user=env.sys_admin):
-            sudo('psql < %s/postgresql/configure.sql' % env.confdir, user='postgres')
+            sudo('psql < %s/postgresql/postgres.sql' % env.conf_dir, user='postgres')
 
+    def restart(self):
+        pass 
 
 class fabSSH():
     # TODO: configuring users
@@ -65,7 +67,7 @@ def fabCompass():
     pass
 
 
-class fabSupervisor():
+class fabDjangoGunicorn(FabricCommand):
 
     def install(self):
         # latest ubuntu supervisor doesnt work, we install with pip for now
@@ -75,31 +77,27 @@ class fabSupervisor():
 
     def configure(self):
         with settings(user=env.sys_admin):
-            sudo('ln -sf %s/supervisord.conf /etc/supervisor/conf.d/rh2.conf' % env.conf)
+            sudo('ln -sf %s/gunicorn/supervisord.conf /etc/supervisor/conf.d/%s.conf' % (env.conf_dir,env.projectname))
 
     def restart(self):
-        sudo('supervisorctl reload')
-        sleep(5)
-        sudo('supervisorctl restart celery')
+        with settings(user=env.sys_admin):
+            sudo('supervisorctl reload')
+            sleep(5)
+            sudo('supervisorctl restart %s' % env.projectname)
 
 
-def fabCelery():
-    with settings(user=env.local_user):
-        sudo('ln -sf %s/rh2/conf/celery/supervisor.conf /etc/supervisor/conf.d/celery.conf' % env.directory)
-        sudo('supervisorctl reload')
-        sleep(5)
-        sudo('supervisorctl restart celery')
+class fabCelery():
+    def setup(self):
+        with settings(user=env.sys_admin):
+            sudo('ln -sf %s/rh2/conf/celery/supervisor.conf /etc/supervisor/conf.d/celery.conf' % env.directory)
+            sudo('supervisorctl reload')
+            sleep(5)
+            sudo('supervisorctl restart celery')
 
 
-def fabLocalSettings():
-    with cd(env.directory):
-        run('ln -sf %s/settings.py %s/local_settings.py' % (env.conf ,env.project))
+class fabLocalSettings():
 
-if __name__ == "__main__":
-
-    # testing command
-    # now testing Nginx
-    init()
-    env.hosts = ['localhost']
-    fabNginx().setup()
+    def setup(self):
+        with cd(env.directory):
+            run('ln -sf %s/django/settings.py %s/local_settings.py' % (env.conf_dir, env.projectname))
 

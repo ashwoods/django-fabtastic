@@ -8,15 +8,16 @@ import fabric.state
 env = fabric.state.env
 
 
-def init():
+def fabInit():
     """
     Sets up some default variables
     """
     env.local_dir    = os.path.abspath(os.path.dirname(__file__))
-    env.project_name = env.local_dir.split('/')[-1].lower()
+    env.projectname = env.local_dir.split('/')[-1].lower()
+    env.project_dir  = os.path.join(local_dir, project_name)
     env.virtualenv   = env.project_name
     env.sys_admin    = env.local_user
-    env.confdir      = env.local_dir
+    env.conf_dir      = os.path.join(project_dir, 'conf', 'local')
 
     
 def help():    # TODO: dev/dep
@@ -52,7 +53,8 @@ def create_virtualenv():
 
 def pip_sys_install(package):
     """Installs using the system PIP (not in a ve)"""
-    sudo('pip install %s' % package)
+    with settings(user=env.sys_admin, use_shell=False):
+        sudo('pip install %s' % package)
 
 def pip_install_requirements():
     with cd(env.directory):
@@ -95,7 +97,7 @@ def install_packages(packages):
         package_string = " ".join(packages)
 
     with settings(user=env.sys_admin, use_shell=False):
-        sudo("aptitude install -y -q %s" % package_string)
+        sudo("aptitude install -y -q -q %s" % package_string)
 
 
 def build_dep(packages):
@@ -108,5 +110,5 @@ def build_dep(packages):
         package_string = " ".join(packages)
 
     with settings(user=env.sys_admin, use_shell=False):
-        sudo("aptitude build_dep -y -q %s" % package_string)
+        sudo("aptitude build-dep -y -q -q %s" % package_string)
 
