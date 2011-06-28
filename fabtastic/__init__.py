@@ -17,13 +17,13 @@ class FabricCommand(object):
         self.setup()
 
     def configure(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def install(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def reload(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def setup(self):
         self.install()
@@ -41,6 +41,10 @@ class fabNginx(FabricCommand):
     def configure(self):
         with settings(user=env.sys_admin):
             sudo('ln -sf %s/nginx.conf /etc/nginx/sites-enabled/rh2' % env.confdir)
+
+    def reload(self):
+        with settings(user=env.sys_admin):
+            sudo('/etc/init.d/nginx restart')
 
 class fabPostgresql():
     """Install Postgres 8.4"""
@@ -95,6 +99,7 @@ if __name__ == "__main__":
 
     # testing command
     # now testing Nginx
-
+    init()
+    env.hosts = ['localhost']
     fabNginx().setup()
 

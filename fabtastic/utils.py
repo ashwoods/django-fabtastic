@@ -13,9 +13,10 @@ def init():
     Sets up some default variables
     """
     env.local_dir    = os.path.abspath(os.path.dirname(__file__))
-    env.project_name = env.LOCAL_DIR.split('/')[-1].lower()
+    env.project_name = env.local_dir.split('/')[-1].lower()
     env.virtualenv   = env.project_name
     env.sys_admin    = env.local_user
+    env.confdir      = env.local_dir
 
     
 def help():    # TODO: dev/dep

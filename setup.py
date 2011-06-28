@@ -7,9 +7,8 @@ VERSION = open('VERSION').read().lstrip('version: ').rstrip('\n')
 
 
 setup(name='fabtastic',
-      version = '0.0.1',
+      version = VERSION,
       packages=find_packages(),
-      exclude_package_data={'fabtastic': ['bin/*.pyc']},
-      setup_requires = ["setuptools_git >= 0.3",'fabric'],
-      #scripts
+      #exclude_package_data={'fabtastic': ['bin/*.pyc']},
+      setup_requires = ["setuptools_git >= 0.3",],
       )
